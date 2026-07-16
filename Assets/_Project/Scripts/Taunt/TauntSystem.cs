@@ -12,6 +12,12 @@ namespace HueSeek.Taunt
 
         public UnityEvent OnTauntPerformed = new();
 
+        public void Initialize(MatchScorer scorer, ClaylingController owner)
+        {
+            _scorer = scorer;
+            _owner = owner;
+        }
+
         public void PerformTaunt()
         {
             if (_owner == null || _owner.Role != PlayerRole.Hider) return;

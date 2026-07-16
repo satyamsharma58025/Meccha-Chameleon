@@ -11,6 +11,6 @@ namespace HueSeek.Paint
         public PaintMaterialProperties Material;
         public float SampledAtTime;
 
-        public bool IsValid => TextureSwatchId != null;
+        public bool IsValid => !string.IsNullOrEmpty(TextureSwatchId);
     }
 }

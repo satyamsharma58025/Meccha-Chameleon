@@ -17,8 +17,8 @@ namespace HueSeek.Paint
 
         public static PaintMaterialProperties Default => new()
         {
-            Metallic = 0f,
-            Roughness = 0.5f,
+            Metallic = 0.1f,
+            Roughness = 0.55f,
             PatternComplexity = 0.2f,
             ImperfectionNoise = 0.12f
         };

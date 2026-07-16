@@ -38,13 +38,14 @@ namespace HueSeek.Paint
         private static PaintSwatch BuildSwatchFromHit(Renderer renderer, RaycastHit hit)
         {
             var color = SampleDominantColor(renderer, hit);
+            var material = SampleMaterialProperties(renderer, hit);
             var swatchId = GenerateTextureSwatchId(renderer, hit);
 
             return new PaintSwatch
             {
                 DominantColor = color,
                 TextureSwatchId = swatchId,
-                Material = PaintMaterialProperties.Default,
+                Material = material,
                 SampledAtTime = Time.time
             };
         }
@@ -59,6 +60,25 @@ namespace HueSeek.Paint
             return renderer.sharedMaterial != null
                 ? renderer.sharedMaterial.GetColor("_BaseColor")
                 : Color.gray;
+        }
+
+        private static PaintMaterialProperties SampleMaterialProperties(Renderer renderer, RaycastHit hit)
+        {
+            var block = new MaterialPropertyBlock();
+            renderer.GetPropertyBlock(block);
+
+            var metallic = block.HasFloat("_Metallic") ? block.GetFloat("_Metallic") : renderer.sharedMaterial?.GetFloat("_Metallic") ?? 0f;
+            var roughness = block.HasFloat("_Roughness") ? block.GetFloat("_Roughness") : renderer.sharedMaterial?.GetFloat("_Roughness") ?? 0.55f;
+            var baseColor = block.HasColor("_BaseColor") ? block.GetColor("_BaseColor") : renderer.sharedMaterial?.GetColor("_BaseColor") ?? Color.gray;
+            var brightness = (baseColor.r + baseColor.g + baseColor.b) / 3f;
+
+            return new PaintMaterialProperties
+            {
+                Metallic = Mathf.Clamp01(metallic + (brightness > 0.6f ? 0.05f : 0f)),
+                Roughness = Mathf.Clamp01(roughness + (brightness < 0.3f ? 0.08f : 0f)),
+                PatternComplexity = 0.2f,
+                ImperfectionNoise = 0.12f
+            };
         }
 
         private static string GenerateTextureSwatchId(Renderer renderer, RaycastHit hit)

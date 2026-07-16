@@ -1,9 +1,12 @@
 using System.Collections.Generic;
 using HueSeek.Backend;
 using HueSeek.Core;
+using HueSeek.Detection;
 using HueSeek.Networking;
 using HueSeek.Paint;
 using HueSeek.Player;
+using HueSeek.Scoring;
+using HueSeek.Taunt;
 using UnityEngine;
 
 namespace HueSeek.Bootstrap
@@ -22,6 +25,7 @@ namespace HueSeek.Bootstrap
         private LocalBackendService _backendService;
         private RoundStateMachine _stateMachine;
         private MatchOrchestrator _matchOrchestrator;
+        private MatchScorer _scorer;
         private Camera _mainCamera;
         private ClaylingController _localPlayer;
         private readonly List<ClaylingController> _players = new();
@@ -32,6 +36,7 @@ namespace HueSeek.Bootstrap
             _backendService = gameObject.AddComponent<LocalBackendService>();
             _stateMachine = gameObject.AddComponent<RoundStateMachine>();
             _matchOrchestrator = gameObject.AddComponent<MatchOrchestrator>();
+            _scorer = gameObject.AddComponent<MatchScorer>();
             _matchOrchestrator.Initialize(_stateMachine, _modeType);
 
             if (_autoStart)
@@ -54,6 +59,7 @@ namespace HueSeek.Bootstrap
 
         private void StartLocalMatch()
         {
+            CreateEnvironment();
             var paintMaterial = _paintMaterial ?? ClaylingFactory.CreatePaintMaterial();
             _players.Clear();
 
@@ -69,7 +75,10 @@ namespace HueSeek.Bootstrap
                 _players.Add(player);
                 _matchOrchestrator.RegisterPlayer(player);
 
-                var seekerToolkit = player.GetComponent<Detection.SeekerToolkit>();
+                var taunt = player.GetComponent<TauntSystem>();
+                taunt?.Initialize(_scorer, player);
+
+                var seekerToolkit = player.GetComponent<SeekerToolkit>();
                 if (seekerToolkit != null)
                 {
                     seekerToolkit.OnTagged.AddListener(hider => _matchOrchestrator.OnHiderTagged(hider));
@@ -97,6 +106,44 @@ namespace HueSeek.Bootstrap
             _mainCamera.clearFlags = CameraClearFlags.Skybox;
             _mainCamera.nearClipPlane = 0.1f;
             _mainCamera.farClipPlane = 100f;
+        }
+
+        private void CreateEnvironment()
+        {
+            var floor = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            floor.name = "Floor";
+            floor.transform.position = Vector3.zero;
+            floor.transform.localScale = new Vector3(1.6f, 1f, 1.6f);
+            floor.GetComponent<Renderer>().material = CreateSurfaceMaterial(new Color(0.16f, 0.17f, 0.2f), 0.05f, 0.9f);
+
+            var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            wall.name = "Wall";
+            wall.transform.position = new Vector3(0f, 1.5f, 4.5f);
+            wall.transform.localScale = new Vector3(6f, 3f, 0.2f);
+            wall.GetComponent<Renderer>().material = CreateSurfaceMaterial(new Color(0.32f, 0.45f, 0.55f), 0.2f, 0.4f);
+
+            var panel = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            panel.name = "PatternPanel";
+            panel.transform.position = new Vector3(2.5f, 1.2f, 2.2f);
+            panel.transform.localScale = new Vector3(2f, 1.8f, 0.2f);
+            panel.GetComponent<Renderer>().material = CreateSurfaceMaterial(new Color(0.68f, 0.6f, 0.45f), 0.1f, 0.3f);
+
+            var prop = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            prop.name = "Prop";
+            prop.transform.position = new Vector3(-2.2f, 0.6f, 1.2f);
+            prop.transform.localScale = new Vector3(1f, 1.2f, 0.8f);
+            prop.GetComponent<Renderer>().material = CreateSurfaceMaterial(new Color(0.75f, 0.28f, 0.3f), 0.35f, 0.25f);
+        }
+
+        private static Material CreateSurfaceMaterial(Color color, float metallic, float roughness)
+        {
+            var material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            material.color = color;
+            if (material.HasProperty("_BaseColor"))
+                material.SetColor("_BaseColor", color);
+            material.SetFloat("_Metallic", metallic);
+            material.SetFloat("_Roughness", roughness);
+            return material;
         }
     }
 }

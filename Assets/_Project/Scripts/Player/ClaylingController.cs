@@ -66,13 +66,15 @@ namespace HueSeek.Player
             var bounds = nearbyGeometry.bounds;
             var verticalExtent = bounds.size.y;
             var isWallLike = bounds.size.y > bounds.size.x * 2f;
+            var suggestedPose = isWallLike
+                ? PlayerPose.ClingWall
+                : verticalExtent < 0.5f
+                    ? PlayerPose.LieFlat
+                    : bounds.size.y > 1.5f && bounds.size.z < 0.8f
+                        ? PlayerPose.Sit
+                        : PlayerPose.Crouch;
 
-            if (isWallLike)
-                SetPose(PlayerPose.ClingWall);
-            else if (verticalExtent < 0.5f)
-                SetPose(PlayerPose.LieFlat);
-            else
-                SetPose(PlayerPose.Crouch);
+            SetPose(suggestedPose);
         }
 
         public void ResetForRound()

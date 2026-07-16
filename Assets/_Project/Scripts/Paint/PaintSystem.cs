@@ -36,9 +36,39 @@ namespace HueSeek.Paint
 
         public void SetActiveTool(BrushTool tool) => ActiveTool = tool;
 
-        public void SetActivePattern(PatternStampType pattern) => ActivePattern = pattern;
+        public void SetActivePattern(PatternStampType pattern)
+        {
+            ActivePattern = pattern;
+            ActiveTool = BrushTool.PatternStamp;
+        }
 
         public void SetMaterialProperties(PaintMaterialProperties material) => ActiveMaterial = material;
+
+        public void SetMetallic(float metallic)
+        {
+            ActiveMaterial = new PaintMaterialProperties
+            {
+                Metallic = Mathf.Clamp01(metallic),
+                Roughness = ActiveMaterial.Roughness,
+                PatternComplexity = ActiveMaterial.PatternComplexity,
+                ImperfectionNoise = ActiveMaterial.ImperfectionNoise
+            };
+        }
+
+        public void SetRoughness(float roughness)
+        {
+            ActiveMaterial = new PaintMaterialProperties
+            {
+                Metallic = ActiveMaterial.Metallic,
+                Roughness = Mathf.Clamp01(roughness),
+                PatternComplexity = ActiveMaterial.PatternComplexity,
+                ImperfectionNoise = ActiveMaterial.ImperfectionNoise
+            };
+        }
+
+        public void AdjustMetallic(float delta) => SetMetallic(ActiveMaterial.Metallic + delta);
+
+        public void AdjustRoughness(float delta) => SetRoughness(ActiveMaterial.Roughness + delta);
 
         public bool TrySampleColor(Ray ray)
         {
@@ -59,14 +89,22 @@ namespace HueSeek.Paint
             var renderer = hit.collider.GetComponentInParent<Renderer>();
             if (renderer == null || renderer != _avatarRenderer) return false;
 
+            var baseColor = _palette.ActiveSwatch.IsValid ? _palette.ActiveSwatch.DominantColor : Color.white;
+            var sampledMaterial = _palette.ActiveSwatch.IsValid ? _palette.ActiveSwatch.Material : ActiveMaterial;
             var stroke = new PaintStroke
             {
                 PlayerId = playerId,
                 TimestampMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
                 WorldHitPoint = hit.point,
                 WorldNormal = hit.normal,
-                Color = _palette.ActiveSwatch.IsValid ? _palette.ActiveSwatch.DominantColor : Color.white,
-                Material = ActiveMaterial,
+                Color = ApplyImperfection(baseColor, sampledMaterial),
+                Material = new PaintMaterialProperties
+                {
+                    Metallic = sampledMaterial.Metallic,
+                    Roughness = sampledMaterial.Roughness,
+                    PatternComplexity = sampledMaterial.PatternComplexity,
+                    ImperfectionNoise = sampledMaterial.ImperfectionNoise
+                },
                 Tool = ActiveTool,
                 Pattern = ActivePattern,
                 BrushRadius = brushRadius,
@@ -83,7 +121,14 @@ namespace HueSeek.Paint
         private void ApplyStrokeLocally(PaintStroke stroke, Vector2 uv)
         {
             if (_paintAccumulator != null)
-                _paintAccumulator.ApplyStroke(stroke, uv);
+            {
+                if (ActiveTool == BrushTool.PatternStamp)
+                    ApplyPatternStamp(stroke, uv);
+                else if (ActiveTool == BrushTool.BucketFill)
+                    ApplyPatternStamp(stroke, uv, 8);
+                else
+                    _paintAccumulator.ApplyStroke(stroke, uv);
+            }
 
             if (_avatarRenderer == null) return;
 
@@ -94,6 +139,72 @@ namespace HueSeek.Paint
             block.SetFloat("_Roughness", stroke.Material.Roughness);
             block.SetFloat("_Imperfection", stroke.Material.ImperfectionNoise);
             _avatarRenderer.SetPropertyBlock(block);
+        }
+
+        private void ApplyPatternStamp(PaintStroke stroke, Vector2 uv, int count = 4)
+        {
+            if (_paintAccumulator == null) return;
+
+            var offsets = ActivePattern switch
+            {
+                PatternStampType.Dots => CreateDotPattern(uv, count),
+                PatternStampType.Checker => CreateCheckerPattern(uv, count),
+                PatternStampType.WoodGrain => CreateWoodGrainPattern(uv, count),
+                _ => CreateStripePattern(uv, count)
+            };
+
+            foreach (var offset in offsets)
+                _paintAccumulator.ApplyStroke(stroke, offset);
+        }
+
+        private static List<Vector2> CreateStripePattern(Vector2 uv, int count)
+        {
+            var pattern = new List<Vector2>();
+            for (var i = 0; i < count; i++)
+                pattern.Add(new Vector2(uv.x + (i % 2 == 0 ? -0.01f : 0.01f), uv.y + i * 0.015f));
+            return pattern;
+        }
+
+        private static List<Vector2> CreateDotPattern(Vector2 uv, int count)
+        {
+            var pattern = new List<Vector2>();
+            for (var i = 0; i < count; i++)
+            {
+                var x = uv.x + ((i % 2) * 0.02f) - 0.01f;
+                var y = uv.y + ((i / 2) * 0.02f) - 0.01f;
+                pattern.Add(new Vector2(x, y));
+            }
+            return pattern;
+        }
+
+        private static List<Vector2> CreateCheckerPattern(Vector2 uv, int count)
+        {
+            var pattern = new List<Vector2>();
+            for (var i = 0; i < count; i++)
+            {
+                var x = uv.x + (i % 2 == 0 ? 0.015f : -0.015f);
+                var y = uv.y + (i % 3 == 0 ? 0.015f : -0.015f);
+                pattern.Add(new Vector2(x, y));
+            }
+            return pattern;
+        }
+
+        private static List<Vector2> CreateWoodGrainPattern(Vector2 uv, int count)
+        {
+            var pattern = new List<Vector2>();
+            for (var i = 0; i < count; i++)
+                pattern.Add(new Vector2(uv.x + Mathf.Sin(i * 0.8f) * 0.015f, uv.y + i * 0.012f));
+            return pattern;
+        }
+
+        private static Color ApplyImperfection(Color baseColor, PaintMaterialProperties material)
+        {
+            var noise = Mathf.Lerp(0.01f, 0.07f, material.ImperfectionNoise);
+            return new Color(
+                Mathf.Clamp01(baseColor.r + Random.Range(-noise, noise)),
+                Mathf.Clamp01(baseColor.g + Random.Range(-noise, noise)),
+                Mathf.Clamp01(baseColor.b + Random.Range(-noise, noise)),
+                1f);
         }
 
         public IReadOnlyList<PaintStroke> ConsumePendingStrokes()

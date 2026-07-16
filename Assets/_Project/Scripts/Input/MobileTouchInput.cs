@@ -1,5 +1,7 @@
+using HueSeek.Detection;
 using HueSeek.Paint;
 using HueSeek.Player;
+using HueSeek.Taunt;
 using UnityEngine;
 
 namespace HueSeek.Input
@@ -11,7 +13,8 @@ namespace HueSeek.Input
     {
         [SerializeField] private ClaylingController _player;
         [SerializeField] private PaintSystem _paintSystem;
-        [SerializeField] private Detection.SeekerToolkit _seekerToolkit;
+        [SerializeField] private SeekerToolkit _seekerToolkit;
+        [SerializeField] private TauntSystem _tauntSystem;
         [SerializeField] private float _brushRadius = 0.08f;
 
         private Vector2 _moveInput;
@@ -42,8 +45,9 @@ namespace HueSeek.Input
         public void OnPaintDrag(Ray ray, float pressure)
         {
             if (_player == null || _paintSystem == null) return;
-            _paintSystem.TryApplyStroke(ray, _brushRadius, pressure, _player.PlayerId);
-            _player.GetComponent<DetectionRiskTracker>()?.RegisterRepaint(pressure);
+            var didPaint = _paintSystem.TryApplyStroke(ray, _brushRadius, pressure, _player.PlayerId);
+            if (didPaint)
+                _player.GetComponent<DetectionRiskTracker>()?.RegisterRepaint(pressure);
         }
 
         public void OnSeekerTap(Ray ray)
@@ -60,6 +64,36 @@ namespace HueSeek.Input
 
             if (Input.GetKeyDown(KeyCode.P))
                 TogglePaintMode();
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+                _paintSystem?.SetActiveTool(BrushTool.Freehand);
+            if (Input.GetKeyDown(KeyCode.Alpha2))
+                _paintSystem?.SetActiveTool(BrushTool.BucketFill);
+            if (Input.GetKeyDown(KeyCode.Alpha3))
+                _paintSystem?.SetActivePattern(PatternStampType.Stripes);
+            if (Input.GetKeyDown(KeyCode.Alpha4))
+                _paintSystem?.SetActivePattern(PatternStampType.Dots);
+            if (Input.GetKeyDown(KeyCode.Alpha5))
+                _paintSystem?.SetActivePattern(PatternStampType.Checker);
+            if (Input.GetKeyDown(KeyCode.Q))
+                _paintSystem?.AdjustMetallic(-0.1f);
+            if (Input.GetKeyDown(KeyCode.E))
+                _paintSystem?.AdjustMetallic(0.1f);
+            if (Input.GetKeyDown(KeyCode.R))
+                _paintSystem?.AdjustRoughness(-0.1f);
+            if (Input.GetKeyDown(KeyCode.F))
+                _paintSystem?.AdjustRoughness(0.1f);
+            if (Input.GetKeyDown(KeyCode.Z))
+                _player?.SetPose(PlayerPose.Crouch);
+            if (Input.GetKeyDown(KeyCode.X))
+                _player?.SetPose(PlayerPose.LieFlat);
+            if (Input.GetKeyDown(KeyCode.C))
+                _player?.SetPose(PlayerPose.ClingWall);
+            if (Input.GetKeyDown(KeyCode.V))
+                _player?.SetPose(PlayerPose.Sit);
+            if (Input.GetKeyDown(KeyCode.B))
+                _player?.SetPose(PlayerPose.ContortSilhouette);
+            if (Input.GetKeyDown(KeyCode.T))
+                _tauntSystem?.PerformTaunt();
 
             var camera = Camera.main;
             if (camera == null) return;
