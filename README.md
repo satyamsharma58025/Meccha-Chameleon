@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Hue & Seek — Project Mimic
 
 **Hue & Seek** is an original mobile multiplayer 3D hide-and-seek party game where players paint their Clayling mascot to blend into the environment. Codename: **Project Mimic**.
@@ -107,3 +108,6 @@ Before any public build, complete every item in [docs/ip-safety-checklist.md](do
 ## License
 
 Proprietary — all assets and code are original IP for Hue & Seek.
+=======
+# Meccha-Chameleon
+>>>>>>> 24ee830dbfeb4e474f9546fd1b68c24adc5ebe1b
