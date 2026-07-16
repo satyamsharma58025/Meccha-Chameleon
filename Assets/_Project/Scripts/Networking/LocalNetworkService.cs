@@ -15,7 +15,9 @@ namespace HueSeek.Networking
         public bool IsHost => IsConnected;
 
         public event Action<int> OnPlayerJoined;
+#pragma warning disable CS0067
         public event Action<int> OnPlayerLeft;
+#pragma warning restore CS0067
         public event Action<RoundPhase, float> OnPhaseChanged;
         public event Action<Paint.PaintStroke> OnRemoteStroke;
 

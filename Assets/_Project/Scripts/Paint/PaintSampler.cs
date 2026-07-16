@@ -85,7 +85,8 @@ namespace HueSeek.Paint
         {
             var tex = renderer.sharedMaterial?.GetTexture("_BaseMap");
             var uv = hit.textureCoord;
-            return $"{renderer.GetInstanceID()}_{tex?.GetInstanceID() ?? 0}_{uv.x:F3}_{uv.y:F3}";
+            var texId = tex != null ? tex.GetEntityId().ToString().GetHashCode() : 0;
+            return $"{renderer.GetEntityId()}_{texId}_{uv.x:F3}_{uv.y:F3}";
         }
     }
 }

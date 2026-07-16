@@ -20,7 +20,7 @@ namespace HueSeek.Modes
         {
             if (playerIds.Count == 0) return Array.Empty<RoleAssignment>();
 
-            var first = playerIds[Random.Shared.Next(playerIds.Count)];
+            var first = playerIds[UnityEngine.Random.Range(0, playerIds.Count)];
             return playerIds.Select(id => new RoleAssignment
             {
                 PlayerId = id,

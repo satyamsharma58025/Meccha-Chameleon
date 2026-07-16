@@ -29,7 +29,7 @@ namespace HueSeek.Player
 
         private bool AnySeekerHasLineOfSight()
         {
-            var seekers = FindObjectsByType<ClaylingController>(FindObjectsSortMode.None);
+            var seekers = FindObjectsByType<ClaylingController>();
             var origin = transform.position + Vector3.up * 0.5f;
 
             foreach (var seeker in seekers)

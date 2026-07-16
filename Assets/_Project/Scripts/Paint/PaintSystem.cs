@@ -16,7 +16,9 @@ namespace HueSeek.Paint
         [SerializeField] private PaintSampler _sampler;
         [SerializeField] private Renderer _avatarRenderer;
         [SerializeField] private PaintTextureAccumulator _paintAccumulator;
+#pragma warning disable CS0414
         [SerializeField] private int _paintTextureResolution = 512;
+#pragma warning restore CS0414
 
         private readonly PaintPalette _palette = new();
         private readonly List<PaintStroke> _pendingStrokes = new();
@@ -201,9 +203,9 @@ namespace HueSeek.Paint
         {
             var noise = Mathf.Lerp(0.01f, 0.07f, material.ImperfectionNoise);
             return new Color(
-                Mathf.Clamp01(baseColor.r + Random.Range(-noise, noise)),
-                Mathf.Clamp01(baseColor.g + Random.Range(-noise, noise)),
-                Mathf.Clamp01(baseColor.b + Random.Range(-noise, noise)),
+                Mathf.Clamp01(baseColor.r + UnityEngine.Random.Range(-noise, noise)),
+                Mathf.Clamp01(baseColor.g + UnityEngine.Random.Range(-noise, noise)),
+                Mathf.Clamp01(baseColor.b + UnityEngine.Random.Range(-noise, noise)),
                 1f);
         }
 

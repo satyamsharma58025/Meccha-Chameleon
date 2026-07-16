@@ -59,50 +59,50 @@ namespace HueSeek.Input
 
         private void Update()
         {
-            _moveInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+            _moveInput = new Vector2(UnityEngine.Input.GetAxis("Horizontal"), UnityEngine.Input.GetAxis("Vertical"));
             _player?.Move(_moveInput, Time.deltaTime);
 
-            if (Input.GetKeyDown(KeyCode.P))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.P))
                 TogglePaintMode();
-            if (Input.GetKeyDown(KeyCode.Alpha1))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1))
                 _paintSystem?.SetActiveTool(BrushTool.Freehand);
-            if (Input.GetKeyDown(KeyCode.Alpha2))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2))
                 _paintSystem?.SetActiveTool(BrushTool.BucketFill);
-            if (Input.GetKeyDown(KeyCode.Alpha3))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3))
                 _paintSystem?.SetActivePattern(PatternStampType.Stripes);
-            if (Input.GetKeyDown(KeyCode.Alpha4))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4))
                 _paintSystem?.SetActivePattern(PatternStampType.Dots);
-            if (Input.GetKeyDown(KeyCode.Alpha5))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha5))
                 _paintSystem?.SetActivePattern(PatternStampType.Checker);
-            if (Input.GetKeyDown(KeyCode.Q))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Q))
                 _paintSystem?.AdjustMetallic(-0.1f);
-            if (Input.GetKeyDown(KeyCode.E))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.E))
                 _paintSystem?.AdjustMetallic(0.1f);
-            if (Input.GetKeyDown(KeyCode.R))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.R))
                 _paintSystem?.AdjustRoughness(-0.1f);
-            if (Input.GetKeyDown(KeyCode.F))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.F))
                 _paintSystem?.AdjustRoughness(0.1f);
-            if (Input.GetKeyDown(KeyCode.Z))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Z))
                 _player?.SetPose(PlayerPose.Crouch);
-            if (Input.GetKeyDown(KeyCode.X))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.X))
                 _player?.SetPose(PlayerPose.LieFlat);
-            if (Input.GetKeyDown(KeyCode.C))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.C))
                 _player?.SetPose(PlayerPose.ClingWall);
-            if (Input.GetKeyDown(KeyCode.V))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.V))
                 _player?.SetPose(PlayerPose.Sit);
-            if (Input.GetKeyDown(KeyCode.B))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.B))
                 _player?.SetPose(PlayerPose.ContortSilhouette);
-            if (Input.GetKeyDown(KeyCode.T))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.T))
                 _tauntSystem?.PerformTaunt();
 
             var camera = Camera.main;
             if (camera == null) return;
 
-            var ray = camera.ScreenPointToRay(Input.mousePosition);
-            if (Input.GetMouseButton(0))
+            var ray = camera.ScreenPointToRay(UnityEngine.Input.mousePosition);
+            if (UnityEngine.Input.GetMouseButton(0))
                 OnPaintDrag(ray, pressure: 1f);
 
-            if (Input.GetMouseButtonDown(1))
+            if (UnityEngine.Input.GetMouseButtonDown(1))
                 OnSeekerTap(ray);
         }
     }

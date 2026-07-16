@@ -14,6 +14,7 @@ namespace HueSeek.Backend
         public int PremiumCurrency;
         public int Mmr;
         public List<string> UnlockedCosmetics = new();
+        [System.NonSerialized]
         public Dictionary<string, int> Stats = new();
     }
 }
