@@ -1,0 +1,51 @@
+# Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+
+# IDE
+.vs/
+.vscode/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Builds
+*.apk
+*.aab
+*.ipa
+*.app
+
+# Secrets
+.env
+.env.*
+**/google-services.json
+**/GoogleService-Info.plist
+**/firebase-config.json
+**/StreamingAssets/EOSConfig.json
+
+# Crashlytics
+crashlytics-build.properties
+crashlytics-symbol-upload
