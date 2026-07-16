@@ -24,6 +24,13 @@ namespace HueSeek.Input
         public void SetMoveInput(Vector2 input) => _moveInput = input;
         public void SetLookDelta(Vector2 delta) => _lookDelta = delta;
 
+        public void Initialize(ClaylingController player, PaintSystem paintSystem, Detection.SeekerToolkit seekerToolkit)
+        {
+            _player = player;
+            _paintSystem = paintSystem;
+            _seekerToolkit = seekerToolkit;
+        }
+
         public void TogglePaintMode()
         {
             _paintModeActive = !_paintModeActive;
@@ -48,7 +55,21 @@ namespace HueSeek.Input
 
         private void Update()
         {
+            _moveInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
             _player?.Move(_moveInput, Time.deltaTime);
+
+            if (Input.GetKeyDown(KeyCode.P))
+                TogglePaintMode();
+
+            var camera = Camera.main;
+            if (camera == null) return;
+
+            var ray = camera.ScreenPointToRay(Input.mousePosition);
+            if (Input.GetMouseButton(0))
+                OnPaintDrag(ray, pressure: 1f);
+
+            if (Input.GetMouseButtonDown(1))
+                OnSeekerTap(ray);
         }
     }
 }

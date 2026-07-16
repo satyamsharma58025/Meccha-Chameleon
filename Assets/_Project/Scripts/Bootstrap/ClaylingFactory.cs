@@ -57,8 +57,8 @@ namespace HueSeek.Bootstrap
             clayling.PlayerId = playerId;
 
             var seeker = root.AddComponent<SeekerToolkit>();
-            var input = root.AddComponent<PlayerInputController>();
-            input.Initialize(clayling, paintSystem, seeker, cameraRig);
+            var input = root.AddComponent<MobileTouchInput>();
+            input.Initialize(clayling, paintSystem, seeker);
 
             var shimmer = body.AddComponent<ShimmerEffect>();
             shimmer.Bind(risk);

@@ -15,11 +15,13 @@ namespace HueSeek.Paint
     {
         [SerializeField] private PaintSampler _sampler;
         [SerializeField] private Renderer _avatarRenderer;
+        [SerializeField] private PaintTextureAccumulator _paintAccumulator;
         [SerializeField] private int _paintTextureResolution = 512;
 
         private readonly PaintPalette _palette = new();
         private readonly List<PaintStroke> _pendingStrokes = new();
         private int _strokeSequence;
+        private int _paintLayerMask = Physics.AllLayers;
 
         public PaintPalette Palette => _palette;
         public UnityEvent<PaintStroke> OnStrokeApplied = new();
@@ -50,7 +52,12 @@ namespace HueSeek.Paint
         public bool TryApplyStroke(Ray ray, float brushRadius, float pressure, int playerId)
         {
             if (!IsPaintModeActive) return false;
-            if (!Physics.Raycast(ray, out var hit)) return false;
+
+            var layerMask = _paintLayerMask >= 0 ? _paintLayerMask : Physics.AllLayers;
+            if (!Physics.Raycast(ray, out var hit, Mathf.Infinity, layerMask)) return false;
+
+            var renderer = hit.collider.GetComponentInParent<Renderer>();
+            if (renderer == null || renderer != _avatarRenderer) return false;
 
             var stroke = new PaintStroke
             {
@@ -67,15 +74,17 @@ namespace HueSeek.Paint
                 SequenceNumber = ++_strokeSequence
             };
 
-            ApplyStrokeLocally(stroke);
+            ApplyStrokeLocally(stroke, hit.textureCoord);
             _pendingStrokes.Add(stroke);
             OnStrokeApplied?.Invoke(stroke);
             return true;
         }
 
-        private void ApplyStrokeLocally(PaintStroke stroke)
+        private void ApplyStrokeLocally(PaintStroke stroke, Vector2 uv)
         {
-            // MVP: shader receives stroke buffer. See docs/paint-system.md for RenderTexture accumulation.
+            if (_paintAccumulator != null)
+                _paintAccumulator.ApplyStroke(stroke, uv);
+
             if (_avatarRenderer == null) return;
 
             var block = new MaterialPropertyBlock();
@@ -100,6 +109,16 @@ namespace HueSeek.Paint
             _strokeSequence = 0;
             if (_avatarRenderer != null)
                 _avatarRenderer.SetPropertyBlock(null);
+
+            _paintAccumulator?.Clear();
+        }
+
+        public void Configure(PaintSampler sampler, Renderer avatarRenderer, PaintTextureAccumulator paintAccumulator, int avatarLayer)
+        {
+            _sampler = sampler;
+            _avatarRenderer = avatarRenderer;
+            _paintAccumulator = paintAccumulator;
+            _paintLayerMask = 1 << avatarLayer;
         }
     }
 }

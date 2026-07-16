@@ -28,6 +28,16 @@ namespace HueSeek.Core
         private void Awake()
         {
             _modeRules = CreateModeRules(_modeType);
+            if (_stateMachine != null)
+                _stateMachine.OnPhaseEntered.AddListener(HandlePhaseEntered);
+        }
+
+        public void Initialize(RoundStateMachine stateMachine, GameModeType modeType)
+        {
+            _stateMachine = stateMachine;
+            _modeType = modeType;
+            _modeRules = CreateModeRules(_modeType);
+            _stateMachine.OnPhaseEntered.AddListener(HandlePhaseEntered);
         }
 
         public void RegisterPlayer(ClaylingController player)
@@ -84,6 +94,12 @@ namespace HueSeek.Core
         }
 
         public void OnHuntTimerExpired() => EvaluateWinCondition(endByTimer: true);
+
+        private void HandlePhaseEntered(RoundPhase phase)
+        {
+            if (phase == RoundPhase.Hunt)
+                OnPrepPhaseEnded();
+        }
 
         private void EvaluateWinCondition(bool endByTimer = false)
         {

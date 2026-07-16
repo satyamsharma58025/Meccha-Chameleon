@@ -24,6 +24,14 @@ namespace HueSeek.Player
 
         public PaintSystem Paint => _paintSystem;
 
+        public void Initialize(CharacterController controller, PaintSystem paintSystem, DetectionRiskTracker riskTracker, TauntSystem tauntSystem)
+        {
+            _controller = controller;
+            _paintSystem = paintSystem;
+            _riskTracker = riskTracker;
+            _tauntSystem = tauntSystem;
+        }
+
         public void AssignRole(PlayerRole role)
         {
             Role = role;
