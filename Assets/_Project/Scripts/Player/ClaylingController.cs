@@ -13,6 +13,7 @@ namespace HueSeek.Player
     public class ClaylingController : MonoBehaviour
     {
         [SerializeField] private float _moveSpeed = 4f;
+        [SerializeField] private float _turnSpeed = 10f;
         [SerializeField] private CharacterController _controller;
         [SerializeField] private PaintSystem _paintSystem;
         [SerializeField] private DetectionRiskTracker _riskTracker;
@@ -53,13 +54,31 @@ namespace HueSeek.Player
 
         public void Move(Vector2 input, float deltaTime)
         {
-            if (IsLocked || Role == PlayerRole.Spectator) return;
+            if (Role == PlayerRole.Spectator) return;
 
-            var motion = new Vector3(input.x, 0f, input.y) * _moveSpeed * deltaTime;
-            _controller?.Move(motion);
+            var camera = Camera.main;
+            var moveDirection = Vector3.zero;
 
-            if (motion.sqrMagnitude > 0.0001f)
+            if (camera != null)
+            {
+                var forward = Vector3.ProjectOnPlane(camera.transform.forward, Vector3.up).normalized;
+                var right = Vector3.ProjectOnPlane(camera.transform.right, Vector3.up).normalized;
+                moveDirection = (right * input.x + forward * input.y);
+            }
+            else
+            {
+                moveDirection = new Vector3(input.x, 0f, input.y);
+            }
+
+            if (moveDirection.sqrMagnitude > 0.0001f)
+            {
+                moveDirection = moveDirection.normalized;
+                transform.forward = Vector3.Slerp(transform.forward, moveDirection, _turnSpeed * deltaTime);
+
+                var motion = moveDirection * _moveSpeed * deltaTime;
+                _controller?.Move(motion);
                 _riskTracker?.RegisterMovement();
+            }
         }
 
         public void SetPose(PlayerPose pose)

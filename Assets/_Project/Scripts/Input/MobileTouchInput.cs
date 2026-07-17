@@ -59,7 +59,25 @@ namespace HueSeek.Input
 
         private void Update()
         {
-            _moveInput = new Vector2(UnityEngine.Input.GetAxis("Horizontal"), UnityEngine.Input.GetAxis("Vertical"));
+            var horizontal = UnityEngine.Input.GetAxis("Horizontal");
+            var vertical = UnityEngine.Input.GetAxis("Vertical");
+
+            if (Mathf.Approximately(horizontal, 0f) && Mathf.Approximately(vertical, 0f))
+            {
+                horizontal = 0f;
+                vertical = 0f;
+
+                if (UnityEngine.Input.GetKey(KeyCode.D) || UnityEngine.Input.GetKey(KeyCode.RightArrow))
+                    horizontal += 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.A) || UnityEngine.Input.GetKey(KeyCode.LeftArrow))
+                    horizontal -= 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.W) || UnityEngine.Input.GetKey(KeyCode.UpArrow))
+                    vertical += 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.S) || UnityEngine.Input.GetKey(KeyCode.DownArrow))
+                    vertical -= 1f;
+            }
+
+            _moveInput = new Vector2(horizontal, vertical);
             _player?.Move(_moveInput, Time.deltaTime);
 
             if (UnityEngine.Input.GetKeyDown(KeyCode.P))

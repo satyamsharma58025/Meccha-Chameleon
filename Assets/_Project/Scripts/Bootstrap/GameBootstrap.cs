@@ -58,16 +58,16 @@ namespace HueSeek.Bootstrap
             if (_mainCamera == null) return;
 
             var target = _localPlayer.transform.position + Vector3.up * 1.1f;
-            var desiredPos = target + new Vector3(0f, 2.5f, -4f);
-            
-            // Smooth damping for camera position (eliminates snapping/jitter)
+            var behindOffset = -_localPlayer.transform.forward * 4.2f + Vector3.up * 2.6f;
+            var desiredPos = target + behindOffset;
+
             _mainCamera.transform.position = Vector3.SmoothDamp(
-                _mainCamera.transform.position, 
-                desiredPos, 
-                ref _cameraVelocity, 
+                _mainCamera.transform.position,
+                desiredPos,
+                ref _cameraVelocity,
                 _cameraDampingTime
             );
-            
+
             _mainCamera.transform.LookAt(target);
         }
 
