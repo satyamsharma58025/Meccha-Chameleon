@@ -11,6 +11,18 @@ namespace HueSeek.Bootstrap
     {
         public const int AvatarLayer = 8;
         public const int EnvironmentLayer = 9;
+        
+        /// <summary>
+        /// Calculate adaptive paint texture resolution based on available graphics memory.
+        /// Lower resolution on mobile/limited VRAM to prevent texture thrashing.
+        /// </summary>
+        private static int GetAdaptivePaintResolution()
+        {
+            // Use 256x256 (64KB) on devices with <2GB graphics memory
+            // Use 512x512 (256KB) on devices with 2GB+ graphics memory
+            var memoryMB = SystemInfo.graphicsMemorySize;
+            return memoryMB < 2048 ? 256 : 512;
+        }
 
         public static ClaylingController CreatePlayer(
             Vector3 position,
@@ -44,7 +56,7 @@ namespace HueSeek.Bootstrap
             renderer.sharedMaterial = paintMaterial;
 
             var paintAccumulator = root.AddComponent<PaintTextureAccumulator>();
-            paintAccumulator.Initialize(renderer, paintMaterial);
+            paintAccumulator.Initialize(renderer, paintMaterial, GetAdaptivePaintResolution());
 
             var sampler = root.AddComponent<PaintSampler>();
             var paintSystem = root.AddComponent<PaintSystem>();

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using HueSeek.Core;
 using HueSeek.Paint;
 using HueSeek.Taunt;
@@ -17,6 +18,9 @@ namespace HueSeek.Player
         [SerializeField] private DetectionRiskTracker _riskTracker;
         [SerializeField] private TauntSystem _tauntSystem;
 
+        // Static registry to avoid O(n²) FindObjectsByType calls
+        public static List<ClaylingController> ActiveSeekers { get; } = new();
+
         public PlayerRole Role { get; private set; } = PlayerRole.None;
         public PlayerPose CurrentPose { get; private set; } = PlayerPose.Stand;
         public int PlayerId { get; set; }
@@ -34,8 +38,15 @@ namespace HueSeek.Player
 
         public void AssignRole(PlayerRole role)
         {
+            // Update seeker registry
+            if (Role == PlayerRole.Seeker)
+                ActiveSeekers.Remove(this);
+            
             Role = role;
             IsLocked = role == PlayerRole.Seeker;
+            
+            if (role == PlayerRole.Seeker)
+                ActiveSeekers.Add(this);
         }
 
         public void SetLocked(bool locked) => IsLocked = locked;

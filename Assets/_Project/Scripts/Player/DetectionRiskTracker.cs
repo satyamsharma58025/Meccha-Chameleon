@@ -29,12 +29,13 @@ namespace HueSeek.Player
 
         private bool AnySeekerHasLineOfSight()
         {
-            var seekers = FindObjectsByType<ClaylingController>();
             var origin = transform.position + Vector3.up * 0.5f;
+            var thisPlayerId = GetComponent<ClaylingController>()?.PlayerId ?? 0;
 
-            foreach (var seeker in seekers)
+            // Use cached seeker list instead of FindObjectsByType O(n²)
+            foreach (var seeker in ClaylingController.ActiveSeekers)
             {
-                if (seeker.Role != PlayerRole.Seeker || seeker.PlayerId == GetComponent<ClaylingController>()?.PlayerId)
+                if (seeker.PlayerId == thisPlayerId)
                     continue;
 
                 var target = seeker.transform.position + Vector3.up * 0.5f;

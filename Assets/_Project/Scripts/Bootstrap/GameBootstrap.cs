@@ -18,8 +18,9 @@ namespace HueSeek.Bootstrap
     {
         [SerializeField] private Material _paintMaterial;
         [SerializeField] private GameModeType _modeType = GameModeType.Classic;
-        [SerializeField] private Vector3[] _playerSpawnPositions = new[] { new Vector3(-2f, 0f, 0f), new Vector3(2f, 0f, 0f) };
+        [SerializeField] private Vector3[] _playerSpawnPositions = new[] { new Vector3(-8f, 0.5f, -8f), new Vector3(8f, 0.5f, 8f) };
         [SerializeField] private bool _autoStart = true;
+        [SerializeField] private float _cameraDampingTime = 0.8f;
 
         private LocalNetworkService _networkService;
         private LocalBackendService _backendService;
@@ -29,6 +30,10 @@ namespace HueSeek.Bootstrap
         private Camera _mainCamera;
         private ClaylingController _localPlayer;
         private readonly List<ClaylingController> _players = new();
+        
+        private Vector3 _cameraVelocity = Vector3.zero;
+        private float _cameraRotVelX = 0f;
+        private float _cameraRotVelY = 0f;
 
         private void Awake()
         {
@@ -53,7 +58,16 @@ namespace HueSeek.Bootstrap
             if (_mainCamera == null) return;
 
             var target = _localPlayer.transform.position + Vector3.up * 1.1f;
-            _mainCamera.transform.position = target + new Vector3(0f, 2.5f, -4f);
+            var desiredPos = target + new Vector3(0f, 2.5f, -4f);
+            
+            // Smooth damping for camera position (eliminates snapping/jitter)
+            _mainCamera.transform.position = Vector3.SmoothDamp(
+                _mainCamera.transform.position, 
+                desiredPos, 
+                ref _cameraVelocity, 
+                _cameraDampingTime
+            );
+            
             _mainCamera.transform.LookAt(target);
         }
 
